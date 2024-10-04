@@ -76,7 +76,7 @@ bool WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 		strcat_s(path, "\\dinput8.dll");
 		dinput8dll = LoadLibraryA(path);
 
-		GetSystemDirectoryA(path2, MAX_PATH);
+		GetCurrentDirectoryA(MAX_PATH, path2);
 		strcat_s(path2, "\\MQ2Main.dll");
 		LoadLibraryA(path2);
 		
