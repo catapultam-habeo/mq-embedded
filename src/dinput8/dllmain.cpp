@@ -53,6 +53,7 @@ bool WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 		char currentDir[MAX_PATH];
 		GetCurrentDirectoryA(MAX_PATH, currentDir);
 		strcat_s(currentDir, "\\MQ2Main.dll");
+		mqmaindll = LoadLibrary(currentDir);
 
 		/*
 		// Ensure the MQ2Main.dll exists in the current directory
