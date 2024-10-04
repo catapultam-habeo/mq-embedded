@@ -14,6 +14,7 @@
 
 #include "MacroQuest.h"
 #include "Crashpad.h"
+#include <fmt/format.h>
 
 #include "common/StringUtils.h"
 #include "mq/base/WString.h"

@@ -1,4 +1,5 @@
 crashpad-backtrace
+fmt
 spdlog
 wil
 date

@@ -184,8 +184,8 @@ extern "C" BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, void*
 	szProcessName[0] = '\0';
 	szProcessName = strrchr(szFilename, '\\') + 1;
 
-	//if (_stricmp(szProcessName, "eqgame") == 0)
-	//{
+	if (_stricmp(szProcessName, "eqgame") == 0)
+	{
 		if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 		{
 			// Get path to the dll and strip off the filename
@@ -214,7 +214,7 @@ extern "C" BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, void*
 
 			return TRUE;
 		}
-	//}
+	}
 
 	return TRUE;
 }

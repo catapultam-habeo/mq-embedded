@@ -13,45 +13,9 @@
 *      being the original software.
 *   3. This notice may not be removed or altered from any source distribution.
 */
+#define FMT_HEADER_ONLY
 
 #include "dinput8.h"
-
-#include "loader/MacroQuest.h"
-#include "loader/ProcessMonitor.h"
-#include "loader/Crashpad.h"
-#include "loader/PostOffice.h"
-#include "loader/ImGui.h"
-#include "loader/LoaderAutoLogin.h"
-#include "login/AutoLogin.h"
-#include "imgui/fonts/IconsFontAwesome.h"
-#include "imgui/ImGuiUtils.h"
-#include "mq/utils/Naming.h"
-#include "mq/utils/OS.h"
-#include "mq/base/BuildInfo.h"
-#include "mq/base/Logging.h"
-
-#include <date/date.h>
-#include <fmt/format.h>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/wincolor_sink.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/sinks/msvc_sink.h>
-#include <extras/wil/Constants.h>
-#include <wil/registry.h>
-#include <wil/resource.h>
-#include <filesystem>
-#include <tuple>
-#include <shellapi.h>
-#include <fcntl.h>
-
-#pragma comment(lib, "Psapi.lib")
-#pragma comment(lib, "Crypt32.lib")
-#pragma comment(lib, "dbghelp.lib")
-#pragma comment(lib, "wbemuuid.lib")
-#pragma comment(lib, "comctl32.lib")
-
-bool patchLinks = true;
-bool patchmeBypass = true;
 
 AddressLookupTable<void> ProxyAddressLookupTable = AddressLookupTable<void>();
 
@@ -62,24 +26,54 @@ DllRegisterServerProc m_pDllRegisterServer;
 DllUnregisterServerProc m_pDllUnregisterServer;
 GetdfDIJoystickProc m_pGetdfDIJoystick;
 
+#include <Windows.h>
+#include <shlwapi.h>
+#include <stdexcept>
+
+#pragma comment(lib, "Shlwapi.lib")
+
+typedef int(__stdcall* CheckVersionProc)();
+
 bool WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	static HMODULE dinput8dll = nullptr;
+	static HMODULE mqmaindll = nullptr;
 
 	switch (dwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-		// Load dll
-		char path[MAX_PATH];
-		char path2[MAX_PATH];
-		GetSystemDirectoryA(path, MAX_PATH);
-		strcat_s(path, "\\dinput8.dll");
-		dinput8dll = LoadLibraryA(path);
+	{
+		// Load dinput8.dll from system directory
+		char sysPath[MAX_PATH];
+		GetSystemDirectoryA(sysPath, MAX_PATH);
+		strcat_s(sysPath, "\\dinput8.dll");
+		dinput8dll = LoadLibraryA(sysPath);
 
-		GetCurrentDirectoryA(MAX_PATH, path2);
-		strcat_s(path2, "\\MQ2Main.dll");
-		LoadLibraryA(path2);
-		
+		// Construct the full path to MQ2Main.dll in the current directory
+		char currentDir[MAX_PATH];
+		GetCurrentDirectoryA(MAX_PATH, currentDir);
+		strcat_s(currentDir, "\\MQ2Main.dll");
+
+		/*
+		// Ensure the MQ2Main.dll exists in the current directory
+		if (PathFileExistsA(currentDir))
+		{
+			mqmaindll = LoadLibraryA(currentDir);
+		}
+		else
+		{
+			ExitProcess(1);
+		}
+
+		// Get the CheckVersion method from MQ2Main.dll
+		typedef int(__stdcall* CheckVersionProc)();
+		CheckVersionProc checkVersion = (CheckVersionProc)GetProcAddress(mqmaindll, "CheckVersion");
+		if (checkVersion == nullptr || checkVersion() != 1)
+		{
+			ExitProcess(1);
+		}
+		*/
+
 		// DInput8 Redirecting Stuff
 		m_pDirectInput8Create = (DirectInput8CreateProc)GetProcAddress(dinput8dll, "DirectInput8Create");
 		m_pDllCanUnloadNow = (DllCanUnloadNowProc)GetProcAddress(dinput8dll, "DllCanUnloadNow");
@@ -87,10 +81,16 @@ bool WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 		m_pDllRegisterServer = (DllRegisterServerProc)GetProcAddress(dinput8dll, "DllRegisterServer");
 		m_pDllUnregisterServer = (DllUnregisterServerProc)GetProcAddress(dinput8dll, "DllUnregisterServer");
 		m_pGetdfDIJoystick = (GetdfDIJoystickProc)GetProcAddress(dinput8dll, "GetdfDIJoystick");
-		break;
+	}
+	break;
 
 	case DLL_PROCESS_DETACH:
 		FreeLibrary(dinput8dll);
+		FreeLibrary(mqmaindll);
+		break;
+
+	default:
+		// Optional: Handle other cases (DLL_THREAD_ATTACH, DLL_THREAD_DETACH) if necessary
 		break;
 	}
 
