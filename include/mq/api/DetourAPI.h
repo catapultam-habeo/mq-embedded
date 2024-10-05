@@ -20,13 +20,13 @@
 namespace mq {
 
 #if defined(_M_AMD64)
-// 20 bytes replicates functionality of collision detection from before. It's possible this number can be tweaked or removed
-constexpr uint32_t DETOUR_BYTES_COUNT = 20;
+	// 20 bytes replicates functionality of collision detection from before. It's possible this number can be tweaked or removed
+	constexpr uint32_t DETOUR_BYTES_COUNT = 20;
 #else
-constexpr uint32_t DETOUR_BYTES_COUNT = 12;
+	constexpr uint32_t DETOUR_BYTES_COUNT = 12;
 #endif
 
-// this defines a trampoline for the user, based on the detour signature
+	// this defines a trampoline for the user, based on the detour signature
 #define DETOUR_TRAMPOLINE_DEF(ret, name, argtypes)                              \
 	ret name##_Placeholder##argtypes;                                           \
 	using name##_Type = decltype(&name##_Placeholder);                          \
@@ -38,6 +38,16 @@ constexpr uint32_t DETOUR_BYTES_COUNT = 12;
 		else                                                                    \
 			return (name##_Ptr)(std::forward<Args>(args)...);                   \
 	}
+
+// this defines a trampoline for the user, based on the detour signature, using fastcall convention
+#define DETOUR_TRAMPOLINE_DEF_FASTCALL(ret, name, arg1_type, arg2_type, ...)    \
+    ret __fastcall name##_Placeholder(arg1_type arg1, arg2_type arg2, ##__VA_ARGS__); \
+    using name##_Type = decltype(&name##_Placeholder);                          \
+    inline static name##_Type name##_Ptr = nullptr;                             \
+    template <typename... Args>                                                 \
+    ret __fastcall name(arg1_type arg1, arg2_type arg2, Args&&... args) {       \
+        return name##_Ptr(arg1, arg2, std::forward<Args>(args)...);             \
+    }
 
 // TODO: deprecate DETOUR_TRAMPOLINE_EMPTY to point to a wiki page with the new detours API
 #define DETOUR_TRAMPOLINE_EMPTY(...) \
