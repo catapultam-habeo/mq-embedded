@@ -8,3 +8,6 @@
 [submodule "data/lua/IntegrationTests"]
 	path = src/plugins/lua/lua/IntegrationTests
 	url = https://github.com/macroquest/integration-tests.git
+[submodule "src/src/private"]
+	path = src/src/private
+	url = https://github.com/The-Heroes-Journey-EQEMU/mq-embedded-emu-private
