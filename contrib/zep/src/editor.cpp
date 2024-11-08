@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "zep/editor.h"
 #include "zep/filesystem.h"
 #include "zep/indexer.h"
@@ -10,11 +11,9 @@
 #include "zep/tab_window.h"
 #include "zep/mcommon/file/cpptoml.h"
 
-
 #include <unordered_set>
 
-namespace Zep
-{
+namespace Zep {
 #ifdef _DEBUG
 Zep::ZLogger logger = { true, Zep::ZLT::DBG };
 #else
@@ -23,8 +22,7 @@ Zep::ZLogger logger = { false, Zep::ZLT::INFO };
 bool Zep::ZLog::disabled = false;
 } // namespace Zep
 
-namespace Zep
-{
+namespace Zep {
 
 ZepComponent::ZepComponent(ZepEditor& editor)
     : m_editor(editor)
@@ -860,6 +858,18 @@ void ZepEditor::SetBufferSyntax(ZepBuffer& buffer) const
         else
         {
             buffer.SetSyntaxProvider(SyntaxProvider{});
+        }
+    }
+}
+
+void ZepEditor::SetBufferSyntax(ZepBuffer& buffer, std::string_view syntaxID) const
+{
+    for (const auto& [_, provider] : m_mapSyntax)
+    {
+        if (provider.syntaxID == syntaxID)
+        {
+            buffer.SetSyntaxProvider(provider);
+            return;
         }
     }
 }

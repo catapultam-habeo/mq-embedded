@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "zep/mode_standard.h"
 #include "zep/tab_window.h"
 #include "zep/window.h"
@@ -22,8 +23,7 @@
 // control+Shift == select word
 // CTRL - CVX (copy paste, cut) + Delete Selection
 
-namespace Zep
-{
+namespace Zep {
 
 ZepMode_Standard::ZepMode_Standard(ZepEditor& editor)
     : ZepMode(editor)
@@ -88,6 +88,7 @@ void ZepMode_Standard::Init()
 
     keymap_add(keyMaps, { "<C-=>" }, id_FontBigger);
     keymap_add(keyMaps, { "<C-->" }, id_FontSmaller);
+    keymap_add(keyMaps, { "<C-0>" }, id_FontReset);
 
     keymap_add(keyMaps, { "<C-Up>" }, id_ViewLineBackward);
     keymap_add(keyMaps, { "<C-Down>" }, id_ViewLineForward);
